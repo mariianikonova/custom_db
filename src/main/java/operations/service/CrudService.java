@@ -8,5 +8,5 @@ import operations.operationDeterminators.OperationState;
  */
 public interface CrudService {
 
-    public OperationState perform(String data);
+    public OperationState perform(String ... queryParts);
 }

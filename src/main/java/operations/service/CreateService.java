@@ -10,8 +10,9 @@ public class CreateService implements CrudService {
     public CreateService(String str) {
     }
 
+
     @Override
-    public OperationState perform(String data) {
+    public OperationState perform(String... queryParts) {
         return null;
     }
 }
