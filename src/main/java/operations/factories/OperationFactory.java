@@ -1,11 +1,11 @@
-package operations.service.factoryApproach;
+package operations.factories;
 
 import operations.service.*;
 
 /**
  * Created on 30.01.15.
  */
-public interface operationFactory {
+public interface OperationFactory {
 
     CreateService createCreateService();
 
