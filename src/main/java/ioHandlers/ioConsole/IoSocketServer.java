@@ -5,8 +5,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -16,44 +14,46 @@ import java.util.concurrent.Future;
 public class IoSocketServer {
 
 
-    public void prepareConnection() throws IOException, ExecutionException, InterruptedException {
+    public static void main(String[] args)
+            throws Exception {
 
+        new IoSocketServer().prepareServerConnection();
+    }
+
+    public void prepareServerConnection() throws IOException, ExecutionException, InterruptedException {
 
         AsynchronousServerSocketChannel serverChannel = AsynchronousServerSocketChannel.open();
-        InetSocketAddress hostAddress = new InetSocketAddress("localhost", 3883);
-        serverChannel.bind(hostAddress);
+        InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", 9999);
+        serverChannel.bind(inetSocketAddress);
+
+        System.out.println("Server channel bound to port: " + inetSocketAddress.getPort());
+        System.out.println("Waiting for client to connect... ");
 
         Future acceptResult = serverChannel.accept();
         AsynchronousSocketChannel clientChannel = (AsynchronousSocketChannel) acceptResult.get();
+        System.out.println("Messages from client: ");
 
-        ByteBuffer buffer = ByteBuffer.allocate(32);
-        Future result = clientChannel.read(buffer);
+        if (clientChannel != null && clientChannel.isOpen()) {
 
-        String message = new String(buffer.array()).trim();
-        System.out.println(message);
+            while (true) {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(32);
+                Future result = clientChannel.read(byteBuffer);
 
-        clientChannel.close();
+                while (!result.isDone()) {
+                    //do nothing
+                }
+                byteBuffer.flip();
+
+                String message = new String(byteBuffer.array()).trim();
+                System.out.println(message);
+
+                if (message.equals("Bye. ")) {
+                    break; //while loop
+                }
+                byteBuffer.clear();
+            }//end-while
+            clientChannel.close();
+        }//end-if
         serverChannel.close();
-
-      /*  ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-
-        serverSocketChannel.socket().bind(new InetSocketAddress(9999));
-        serverSocketChannel.configureBlocking(false);
-
-        while (true) {
-            SocketChannel socketChannel =
-                    serverSocketChannel.accept();
-
-            if (socketChannel != null) {
-
-                ByteBuffer buf = ByteBuffer.allocateDirect(1024);
-                buf.put((byte) 0xFF);
-                buf.flip();
-                int numBytesWritten = socketChannel.write(buf);
-
-
-
-            }
-        }*/
     }
 }
