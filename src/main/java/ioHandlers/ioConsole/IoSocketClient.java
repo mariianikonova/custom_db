@@ -29,9 +29,9 @@ public class IoSocketClient implements Runnable {
         CountDownLatch countDownLatch = new CountDownLatch(4);
 
         new IoSocketClient(countDownLatch, "1FIRST: ").run();
-        new IoSocketClient(countDownLatch, "2SECOND: ").prepareClientConnection();
-        new IoSocketClient(countDownLatch, "3THIRD: ").prepareClientConnection();
-        new IoSocketClient(countDownLatch, "4FORTH: ").prepareClientConnection();
+        new IoSocketClient(countDownLatch, "2SECOND: ").run();
+        new IoSocketClient(countDownLatch, "3THIRD: ").run();
+        new IoSocketClient(countDownLatch, "4FORTH: ").run();
 
         System.out.println("Waiting for all workers");
         latch.await();
