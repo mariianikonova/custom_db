@@ -28,13 +28,16 @@ public class IoSocketClient implements Runnable {
 
         CountDownLatch countDownLatch = new CountDownLatch(4);
 
-        new IoSocketClient(countDownLatch, "1FIRST: ").run();
-        new IoSocketClient(countDownLatch, "2SECOND: ").run();
-        new IoSocketClient(countDownLatch, "3THIRD: ").run();
-        new IoSocketClient(countDownLatch, "4FORTH: ").run();
-
+        Thread t1 =new Thread( new IoSocketClient(countDownLatch, "1FIRST: "));
+        t1.start();
+        Thread t2 =new Thread(new IoSocketClient(countDownLatch, "2SECOND: "));
+        t2.start();
+        Thread t3 =new Thread(new IoSocketClient(countDownLatch, "3THIRD: "));
+        t3.start();
+        Thread t4 =new Thread(new IoSocketClient(countDownLatch, "4FORTH: "));
+        t4.start();
         System.out.println("Waiting for all workers");
-        latch.await();
+     /*   latch.await();*/
         System.out.println("All workers finished. Now we can shake.");
     }
 
@@ -69,6 +72,12 @@ public class IoSocketClient implements Runnable {
     public void run() {
         System.out.println("BEFORE LATCH: " + threadName + " time: " + TimeUnit.MILLISECONDS + " ms");
         latch.countDown();
+        System.out.println("BEFORE LATCH: COUNT" + latch.getCount());
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println("AFTER LATCH: " + threadName + " time: " + TimeUnit.MILLISECONDS + " ms");
         try {
             prepareClientConnection();
