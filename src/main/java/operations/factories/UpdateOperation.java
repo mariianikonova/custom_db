@@ -10,12 +10,7 @@ public class UpdateOperation implements Operation {
     }
 
     @Override
-    public void validate() {
-
-    }
-
-    @Override
-    public void proccess() {
+    public void process() {
 
     }
 }

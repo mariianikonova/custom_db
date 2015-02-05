@@ -6,7 +6,7 @@ import operations.handlers.QueryHandlerChain;
 /**
  * Created on 02.02.15.
  */
-public class CreateQuery implements Operation, QueryHandler, QueryHandlerChain {
+public class CreateQuery implements Operation, QueryHandlerChain {
 
     private String query;
 
@@ -18,10 +18,6 @@ public class CreateQuery implements Operation, QueryHandler, QueryHandlerChain {
 
     }
 
-    @Override
-    public void handle(Object request) {
-
-    }
 
     @Override
     public QueryHandlerChain addToChain(QueryHandlerChain extension) {
