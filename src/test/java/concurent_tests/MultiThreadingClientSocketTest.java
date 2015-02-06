@@ -1,4 +1,4 @@
-
+package concurent_tests;
 
 import ioHandlers.ioConsole.IoSocketClient;
 import org.junit.Test;
@@ -7,14 +7,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static junit.framework.TestCase.assertEquals;
-
 /**
  * Created by lexor on 11.01.2015.
  */
 
 public class MultiThreadingClientSocketTest {
     @Test
+
     public void testAdd() {
         CountDownLatch countDownLatch = new CountDownLatch(4);
 
