@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Created by lexor on 03.02.2015.
@@ -17,32 +14,32 @@ public class IoSocketClient implements Runnable {
     private static CountDownLatch latch;
     private String threadName;
 
-    private IoSocketClient(CountDownLatch latch, String threadName) {
+
+    public IoSocketClient(CountDownLatch latch, String threadName) {
         this.latch = latch;
         this.threadName = threadName;
     }
 
-    public static void main(String[] args)
-            throws Exception {
-
-
+    public static void main(String[] args) {
         CountDownLatch countDownLatch = new CountDownLatch(4);
 
-        Thread t1 =new Thread( new IoSocketClient(countDownLatch, "1FIRST: "));
-        t1.start();
-        Thread t2 =new Thread(new IoSocketClient(countDownLatch, "2SECOND: "));
-        t2.start();
-        Thread t3 =new Thread(new IoSocketClient(countDownLatch, "3THIRD: "));
-        t3.start();
-        Thread t4 =new Thread(new IoSocketClient(countDownLatch, "4FORTH: "));
-        t4.start();
+        ExecutorService service = Executors.newFixedThreadPool(4);
+
+        for (int i = 0; i < 12; i++) {
+            Runnable t = new IoSocketClient(countDownLatch, i + "THREAD: ");
+            service.execute(t);
+
+        }
+        service.shutdown();
+        while (service.isTerminated()) {
+            System.out.println("Finished all threads");
+        }
         System.out.println("Waiting for all workers");
-     /*   latch.await();*/
         System.out.println("All workers finished. Now we can shake.");
     }
 
     public void prepareClientConnection() throws IOException, ExecutionException, InterruptedException {
-        System.out.println("START prepareClientConnection: " + threadName + " time: " + TimeUnit.MILLISECONDS + " ms");
+        System.out.println("START prepareClientConnection: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
         AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open();
         InetSocketAddress socketAddress = new InetSocketAddress("localhost", 9999);
         Future future = socketChannel.connect(socketAddress);
@@ -55,8 +52,8 @@ public class IoSocketClient implements Runnable {
         for (int i = 0; i < messages.length; i++) {
             byte[] message = new String(messages[i]).getBytes();
             ByteBuffer buffer = ByteBuffer.wrap(message);
-            Future result = socketChannel.write(buffer);
-            while (!result.isDone()) {
+            future = socketChannel.write(buffer);
+            while (!future.isDone()) {
                 System.out.println("... ");
             }
             System.out.println(messages[i]);
@@ -65,12 +62,12 @@ public class IoSocketClient implements Runnable {
 
         }//for
         socketChannel.close();
-        System.out.println("END prepareClientConnection: " + threadName + " time: " + TimeUnit.MILLISECONDS + " ms");
+        System.out.println("END prepareClientConnection: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void run() {
-        System.out.println("BEFORE LATCH: " + threadName + " time: " + TimeUnit.MILLISECONDS + " ms");
+        System.out.println("BEFORE LATCH: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
         latch.countDown();
         System.out.println("BEFORE LATCH: COUNT" + latch.getCount());
         try {
@@ -78,7 +75,7 @@ public class IoSocketClient implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("AFTER LATCH: " + threadName + " time: " + TimeUnit.MILLISECONDS + " ms");
+        System.out.println("AFTER LATCH: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
         try {
             prepareClientConnection();
             Thread.sleep(RandomGenerator.getRandom(500, 1000));

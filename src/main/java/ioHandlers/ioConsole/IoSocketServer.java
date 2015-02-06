@@ -34,7 +34,7 @@ public class IoSocketServer {
         System.out.println("Messages from client: ");
 
         if (clientChannel != null && clientChannel.isOpen()) {
-
+            System.out.println("Client was Caught: ");
             while (true) {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(32);
                 Future result = clientChannel.read(byteBuffer);

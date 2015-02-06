@@ -1,6 +1,5 @@
 package operations.service;
 
-import com.sun.corba.se.spi.orb.Operation;
 import operations.operationDeterminators.OperationState;
 
 /**
