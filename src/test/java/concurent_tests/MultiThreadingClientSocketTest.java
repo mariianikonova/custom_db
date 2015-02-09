@@ -12,8 +12,8 @@ import java.util.concurrent.Executors;
  */
 
 public class MultiThreadingClientSocketTest {
-    @Test
 
+    @Test
     public void testAdd() {
         CountDownLatch countDownLatch = new CountDownLatch(4);
 
@@ -22,7 +22,6 @@ public class MultiThreadingClientSocketTest {
         for (int i = 0; i < 12; i++) {
             Runnable t = new IoSocketClient(countDownLatch, i + "THREAD: ");
             service.execute(t);
-
         }
         service.shutdown();
         while (service.isTerminated()) {
