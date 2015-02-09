@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -14,32 +15,56 @@ import java.util.concurrent.Future;
  */
 public class IoSocketServer {
 
+    private ConcurrentHashMap<Integer, AsynchronousSocketChannel> clientConnections = new ConcurrentHashMap<>();
+
+    private volatile static AsynchronousServerSocketChannel serverChannel;
+
+    static {
+        try (final AsynchronousServerSocketChannel serverChannelInintial = AsynchronousServerSocketChannel.open()) {
+            InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", 9999);
+            serverChannelInintial.bind(inetSocketAddress);
+            System.out.println("Server channel bound to port: " + inetSocketAddress.getPort());
+            System.out.println("Waiting for client to connect... ");
+            serverChannel = serverChannelInintial;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     public static void main(String[] args)
             throws Exception {
-
-        new IoSocketServer().prepareServerConnection();
+        IoSocketServer.handleIncome(serverChannel);
     }
 
-    public void prepareServerConnection() throws IOException, ExecutionException, InterruptedException {
+/*    public void prepareServerConnection() throws IOException, ExecutionException, InterruptedException {
 
-        AsynchronousServerSocketChannel serverChannel = AsynchronousServerSocketChannel.open();
+        final AsynchronousServerSocketChannel serverChannel = AsynchronousServerSocketChannel.open();
         InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", 9999);
         serverChannel.bind(inetSocketAddress);
-
         System.out.println("Server channel bound to port: " + inetSocketAddress.getPort());
         System.out.println("Waiting for client to connect... ");
+    }*/
 
-/*        Future acceptResult = serverChannel.accept();
-        AsynchronousSocketChannel clientChannel = (AsynchronousSocketChannel) acceptResult.get();
-        System.out.println("Messages from client: ");*/
+    public static void handleIncome(AsynchronousServerSocketChannel serverChannel) {
+        Future<AsynchronousSocketChannel> accepted = serverChannel.accept();
+        try (AsynchronousSocketChannel clientChannel = accepted.get()) {
 
 
-        while(true) {
-            SocketChannel socketChannel =
-                    serverChannel.accept();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-            while (clientChannel != null && clientChannel.isOpen()) {
+
+
+/*        ByteBuffer bb = ByteBuffer.allocateDirect(4096);
+        Future<String> readFuture = clientChannel.read(bb);*/
+
+        while (clientChannel != null && clientChannel.isOpen()) {
             int clientHash = clientChannel.hashCode();
             System.out.println("Client was Caught: " + clientHash);
 
@@ -51,17 +76,18 @@ public class IoSocketServer {
             }
             byteBuffer.flip();
 
-            while (byteBuffer.hasRemaining()) {
-                String message = new String(byteBuffer.array()).trim();
-                System.out.println(message);
-                if (message.equals("Bye. ")) {
-                    break; //while loop
-                }
+    /*        while (byteBuffer.hasRemaining()) {*/
+            String message = new String(byteBuffer.array()).trim();
+            System.out.println("MESSAGE: " + message + "FROM: " + clientHash);
+            if (message.equals("Bye. ")/* || message.isEmpty()*/) {
+                clientChannel.close();
+                break; //while loop
             }
+/*            }*/
             byteBuffer.clear();
         }//end-while
-            clientChannel.close();
-            System.out.println("Client is cloused: " + clientChannel.hashCode());
+
+        System.out.println("Client is cloused: " + clientChannel.hashCode());
 
         //   serverChannel.close();
     }//end-if

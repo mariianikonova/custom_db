@@ -1,6 +1,7 @@
 package ioHandlers.ioConsole;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -40,28 +41,34 @@ public class IoSocketClient implements Runnable {
 
     public void prepareClientConnection() throws IOException, ExecutionException, InterruptedException {
         System.out.println("START prepareClientConnection: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
-        AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open();
-        InetSocketAddress socketAddress = new InetSocketAddress("localhost", 9999);
-        Future future = socketChannel.connect(socketAddress);
-        future.get(); //returns null
+/*        AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open();*/
 
-        System.out.println("Client is started: " + socketChannel.isOpen());
-        System.out.println("Sending messages to server: ");
-        String[] messages = new String[]{"Time goes fast.", "What now?", "Bye."};
+        try (AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open()) {
+            InetSocketAddress socketAddress = new InetSocketAddress("localhost", 9999);
+            Future future = socketChannel.connect(socketAddress);
+            future.get(); //returns null
 
-        for (int i = 0; i < messages.length; i++) {
-            byte[] message = new String(messages[i]).getBytes();
-            ByteBuffer buffer = ByteBuffer.wrap(message);
-            future = socketChannel.write(buffer);
-            while (!future.isDone()) {
-                System.out.println("... ");
-            }
-            System.out.println(messages[i]);
-            buffer.clear();
-            Thread.sleep(3000);
+            System.out.println("Client is started: " + socketChannel.isOpen());
+            System.out.println("Sending messages to server: ");
+            String[] messages = new String[]{"Time goes fast.", "What now?", "Bye."};
 
-        }//for
-        socketChannel.close();
+            for (int i = 0; i < messages.length; i++) {
+                byte[] message = new String(messages[i]).getBytes();
+                ByteBuffer buffer = ByteBuffer.wrap(message);
+                future = socketChannel.write(buffer);
+                System.out.println("MESSAGE was sent: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS + message);
+                while (!future.isDone()) {
+                    System.out.println("... ");
+                }
+                System.out.println(messages[i]);
+                buffer.clear();
+                Thread.sleep(3000);
+
+            }//for
+        } catch (ExecutionException e) {
+            System.out.println("Connection refused: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
+        }
+/*        socketChannel.close();*/
         System.out.println("END prepareClientConnection: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
     }
 
