@@ -1,7 +1,6 @@
 package ioHandlers.ioConsole;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -10,13 +9,13 @@ import java.util.concurrent.*;
 /**
  * Created by lexor on 03.02.2015.
  */
-public class IoSocketClient implements Runnable {
+public class NioSocketClient implements Runnable {
 
     private static CountDownLatch latch;
     private String threadName;
 
 
-    public IoSocketClient(CountDownLatch latch, String threadName) {
+    public NioSocketClient(CountDownLatch latch, String threadName) {
         this.latch = latch;
         this.threadName = threadName;
     }
@@ -27,7 +26,7 @@ public class IoSocketClient implements Runnable {
         ExecutorService service = Executors.newFixedThreadPool(4);
 
         for (int i = 0; i < 12; i++) {
-            Runnable t = new IoSocketClient(countDownLatch, i + "THREAD: ");
+            Runnable t = new NioSocketClient(countDownLatch, i + "THREAD: ");
             service.execute(t);
 
         }

@@ -1,11 +1,11 @@
 package ioHandlers.ioConsole;
 
+import javax.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -13,7 +13,7 @@ import java.util.concurrent.Future;
 /**
  * Created by lexor on 03.02.2015.
  */
-public class IoSocketServer {
+public class NioSocketServer {
 
     private ConcurrentHashMap<Integer, AsynchronousSocketChannel> clientConnections = new ConcurrentHashMap<>();
 
@@ -32,9 +32,11 @@ public class IoSocketServer {
 
     }
 
+    HttpServlet httpServlet;
+
     public static void main(String[] args)
             throws Exception {
-        IoSocketServer.handleIncome(serverChannel);
+        NioSocketServer.handleIncome(serverChannel);
     }
 
 /*    public void prepareServerConnection() throws IOException, ExecutionException, InterruptedException {
@@ -52,6 +54,38 @@ public class IoSocketServer {
 
 
 
+
+
+/*        ByteBuffer bb = ByteBuffer.allocateDirect(4096);
+        Future<String> readFuture = clientChannel.read(bb);*/
+
+            while (clientChannel != null && clientChannel.isOpen()) {
+                int clientHash = clientChannel.hashCode();
+                System.out.println("Client was Caught: " + clientHash);
+
+                ByteBuffer byteBuffer = ByteBuffer.allocate(124);
+                Future result = clientChannel.read(byteBuffer);
+
+                while (!result.isDone()) {
+                    System.out.println("Waiting for task from Client: " + clientChannel.hashCode());/*wait while task will be finished*/
+                }
+                byteBuffer.flip();
+
+    /*        while (byteBuffer.hasRemaining()) {*/
+                String message = new String(byteBuffer.array()).trim();
+                System.out.println("MESSAGE: " + message + "FROM: " + clientHash);
+                if (message.equals("Bye. ")/* || message.isEmpty()*/) {
+                    clientChannel.close();
+                    break; //while loop
+                }
+/*            }*/
+                byteBuffer.clear();
+            }//end-while
+
+            System.out.println("Client is cloused: " + clientChannel.hashCode());
+
+            //   serverChannel.close();
+            //end-if
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -59,38 +93,7 @@ public class IoSocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-/*        ByteBuffer bb = ByteBuffer.allocateDirect(4096);
-        Future<String> readFuture = clientChannel.read(bb);*/
-
-        while (clientChannel != null && clientChannel.isOpen()) {
-            int clientHash = clientChannel.hashCode();
-            System.out.println("Client was Caught: " + clientHash);
-
-            ByteBuffer byteBuffer = ByteBuffer.allocate(124);
-            Future result = clientChannel.read(byteBuffer);
-
-            while (!result.isDone()) {
-                System.out.println("Waiting for task from Client: " + clientChannel.hashCode());/*wait while task will be finished*/
-            }
-            byteBuffer.flip();
-
-    /*        while (byteBuffer.hasRemaining()) {*/
-            String message = new String(byteBuffer.array()).trim();
-            System.out.println("MESSAGE: " + message + "FROM: " + clientHash);
-            if (message.equals("Bye. ")/* || message.isEmpty()*/) {
-                clientChannel.close();
-                break; //while loop
-            }
-/*            }*/
-            byteBuffer.clear();
-        }//end-while
-
-        System.out.println("Client is cloused: " + clientChannel.hashCode());
-
-        //   serverChannel.close();
-    }//end-if
+    }
 }
 
 

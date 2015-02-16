@@ -1,6 +1,6 @@
 package concurent_tests;
 
-import ioHandlers.ioConsole.IoSocketClient;
+import ioHandlers.ioConsole.NioSocketClient;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -20,7 +20,7 @@ public class MultiThreadingClientSocketTest {
         ExecutorService service = Executors.newFixedThreadPool(4);
 
         for (int i = 0; i < 12; i++) {
-            Runnable t = new IoSocketClient(countDownLatch, i + "THREAD: ");
+            Runnable t = new NioSocketClient(countDownLatch, i + "THREAD: ");
             service.execute(t);
         }
         service.shutdown();
