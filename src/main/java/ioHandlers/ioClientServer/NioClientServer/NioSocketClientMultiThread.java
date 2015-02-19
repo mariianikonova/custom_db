@@ -1,4 +1,4 @@
-package ioHandlers.ioConsole;
+package ioHandlers.ioClientServer.NioClientServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -6,16 +6,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.*;
 
+import static ioHandlers.ioClientServer.ClientServerConstr.*;
+
 /**
  * Created by lexor on 03.02.2015.
  */
-public class NioSocketClient implements Runnable {
+public class NioSocketClientMultiThread implements Runnable {
 
-    private static CountDownLatch latch;
+    private static final int CLIENT_THREADS = 12;
+    private CountDownLatch latch;
     private String threadName;
 
 
-    public NioSocketClient(CountDownLatch latch, String threadName) {
+    public NioSocketClientMultiThread(CountDownLatch latch, String threadName) {
         this.latch = latch;
         this.threadName = threadName;
     }
@@ -25,8 +28,8 @@ public class NioSocketClient implements Runnable {
 
         ExecutorService service = Executors.newFixedThreadPool(4);
 
-        for (int i = 0; i < 12; i++) {
-            Runnable t = new NioSocketClient(countDownLatch, i + "THREAD: ");
+        for (int i = 0; i < CLIENT_THREADS; i++) {
+            Runnable t = new NioSocketClientMultiThread(countDownLatch, i + "THREAD: ");
             service.execute(t);
 
         }
@@ -40,34 +43,36 @@ public class NioSocketClient implements Runnable {
 
     public void prepareClientConnection() throws IOException, ExecutionException, InterruptedException {
         System.out.println("START prepareClientConnection: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
-/*        AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open();*/
 
         try (AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open()) {
-            InetSocketAddress socketAddress = new InetSocketAddress("localhost", 9999);
+            InetSocketAddress socketAddress = new InetSocketAddress(RECEIVER_IP, RECEIVER_PORT);
+
+            System.out.println(CLIENT_LOCAL_ADDRESS_STRING + socketChannel.getLocalAddress());
+            System.out.println(CLIENT_REMOTE_ADDRESS_STRING + socketChannel.getLocalAddress());
+
             Future future = socketChannel.connect(socketAddress);
-            future.get(); //returns null
+            while (!future.isDone()) {
+                System.out.println("Connection establishment process...: " + System.nanoTime() + TimeUnit.MILLISECONDS);
+            }
 
             System.out.println("Client is started: " + socketChannel.isOpen());
             System.out.println("Sending messages to server: ");
-            String[] messages = new String[]{"Time goes fast.", "What now?", "Bye."};
+            String[] messages = new String[]{MESSAGE1, MESSAGE2, MESSAGE3};
 
-            for (int i = 0; i < messages.length; i++) {
-                byte[] message = new String(messages[i]).getBytes();
-                ByteBuffer buffer = ByteBuffer.wrap(message);
+            for (String message : messages) {
+                byte[] bytes = (message).getBytes();
+                ByteBuffer buffer = ByteBuffer.wrap(bytes);
                 future = socketChannel.write(buffer);
                 System.out.println("MESSAGE was sent: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS + message);
                 while (!future.isDone()) {
                     System.out.println("... ");
                 }
-                System.out.println(messages[i]);
+                System.out.println(message);
                 buffer.clear();
                 Thread.sleep(3000);
 
-            }//for
-        } catch (ExecutionException e) {
-            System.out.println("Connection refused: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
+            }
         }
-/*        socketChannel.close();*/
         System.out.println("END prepareClientConnection: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
     }
 
@@ -78,19 +83,12 @@ public class NioSocketClient implements Runnable {
         System.out.println("BEFORE LATCH: COUNT" + latch.getCount());
         try {
             latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("AFTER LATCH: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
-        try {
+            System.out.println("AFTER LATCH: " + threadName + " time: " + System.nanoTime() + TimeUnit.MILLISECONDS);
             prepareClientConnection();
             Thread.sleep(RandomGenerator.getRandom(500, 1000));
-        } catch (InterruptedException e) {
+
+        } catch (InterruptedException | ExecutionException | IOException e) {
             e.printStackTrace(System.err);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

@@ -1,4 +1,4 @@
-package ioHandlers.ioConsole;
+package ioHandlers.ioClientServer.examples;
 
 /**
  * Created by user on 13.02.15.
@@ -17,7 +17,7 @@ public class AsynchServerExample {
 
 
     public static void main(String[] args) {
-        final int DEFAULT_PORT = 5555;
+        final int DEFAULT_PORT = 9999;
         final String IP = "127.0.0.1";
         //create an asynchronous server socket channel bound to the default group
         try (AsynchronousServerSocketChannel asynchronousServerSocketChannel =

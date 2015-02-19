@@ -1,13 +1,10 @@
-package ioHandlers.ioConsole;
+package ioHandlers.ioClientServer;
 
-import operations.Crud;
 import operations.operationDeterminators.CrudDeterminator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import static operations.Crud.*;
 
 /**
  * Created on 30.01.15.

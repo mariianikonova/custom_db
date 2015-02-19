@@ -1,7 +1,4 @@
-package ioHandlers.ioConsole;
-
-
-
+package ioHandlers.ioClientServer.ioClientServer;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -9,10 +6,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import static ioHandlers.ioClientServer.ClientServerConstr.*;
 
-public class IoServer {
+public class IoClientServer {
     public static void main(String[] args) throws Exception {
-        ServerSocket m_ServerSocket = new ServerSocket(9999);
+        ServerSocket m_ServerSocket = new ServerSocket(RECEIVER_PORT);
         int id = 0;
         while (true) {
             Socket clientSocket = m_ServerSocket.accept();

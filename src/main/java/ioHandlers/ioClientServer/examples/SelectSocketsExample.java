@@ -1,4 +1,4 @@
-package ioHandlers.ioConsole;
+package ioHandlers.ioClientServer.examples;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
@@ -13,12 +13,12 @@ import java.util.Iterator;
 /**
  * Created by user on 12.02.15.
  */
-public class SelectSockets {
+public class SelectSocketsExample {
     public static int PORT_NUMBER = 9999;
 
     public static void main(String[] argv)
             throws Exception {
-        new SelectSockets().go(argv);
+        new SelectSocketsExample().go(argv);
     }
 
     public void go(String[] argv)
