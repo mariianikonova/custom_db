@@ -6,8 +6,12 @@
 
     <groupId>custom_db</groupId>
     <artifactId>custom_db</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-<dependencies><dependency>
+    <modules>
+        <module>simple_db_client</module>
+    </modules>
+    <dependencies><dependency>
     <groupId>junit</groupId>
     <artifactId>junit</artifactId>
     <version>4.12-beta-1</version>
